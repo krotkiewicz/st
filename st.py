@@ -55,9 +55,13 @@ class ProfilesHandler(BaseHandler):
 
     def bulk_get(self):
         data = json.loads(self.request.body)
-        if not isinstance(data, list):
+        keys = data.pop('keys', None)
+        if not keys:
+            return self.result("'keys' is a required property", 400)
+
+        if not isinstance(keys, list):
             return self.result("a list of keys is required", 400)
-        keys = [ndb.Key(Profile, d) for d in data]
+        keys = [ndb.Key(Profile, d) for d in keys]
         profiles = ndb.get_multi(keys)
         data = {
             'result': [p and self.to_dict(p) for p in profiles],
